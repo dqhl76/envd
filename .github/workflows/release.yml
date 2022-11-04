@@ -232,7 +232,7 @@ jobs:
           chmod +x ../hack/zip.sh
           ../hack/zip.sh
       - run: cd ..
-      - run: make release-notes VERSION=${{ github.event.release.tag_name }}
+      - run: make release-notes VERSION=${{ steps.get_version.outputs.VERSION }}
       - name: publish to github
         uses: softprops/action-gh-release@v1
         with: 
