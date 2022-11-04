@@ -39,24 +39,27 @@ jobs:
             dist/envd_linux_amd64_v1/envd
             dist/envd_darwin_amd64_v1/envd      
           if-no-files-found: error
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Prepare publish manifest
         run: |
           mkdir manifest
-          mv dist/envd_linux_arm64/envd manifest/envd_${{ github.event.release.tag_name }}_Linux_arm64
-          mv dist/envd_linux_amd64_v1/envd manifest/envd_${{ github.event.release.tag_name }}_Linux_x86_64
-          mv dist/envd_linux_386/envd manifest/envd_${{ github.event.release.tag_name }}_Linux_i386
-          mv dist/envd_darwin_amd64_v1/envd manifest/envd_${{ github.event.release.tag_name }}_Darwin_x86_64
-          mv dist/envd_darwin_arm64/envd manifest/envd_${{ github.event.release.tag_name }}_Darwin_arm64
-          mv dist/envd-sshd_linux_amd64_v1/envd-sshd manifest/envd-sshd_${{ github.event.release.tag_name }}_Linux_x86_64
-          mv dist/envd-sshd_linux_arm64/envd-sshd manifest/envd-sshd_${{ github.event.release.tag_name }}_Linux_arm64
-          mv dist/envd-sshd_linux_386/envd-sshd manifest/envd-sshd_${{ github.event.release.tag_name }}_Linux_i386
-          mv dist/envd-sshd_darwin_amd64_v1/envd-sshd manifest/envd-sshd_${{ github.event.release.tag_name }}_Darwin_x86_64
-          mv dist/envd-sshd_darwin_arm64/envd-sshd manifest/envd-sshd_${{ github.event.release.tag_name }}_Darwin_arm64
+          mv dist/envd_linux_arm64/envd manifest/envd_${{ steps.get_version.outputs.VERSION }}_Linux_arm64
+          mv dist/envd_linux_amd64_v1/envd manifest/envd_${{ steps.get_version.outputs.VERSION }}_Linux_x86_64
+          mv dist/envd_linux_386/envd manifest/envd_${{ steps.get_version.outputs.VERSION }}_Linux_i386
+          mv dist/envd_darwin_amd64_v1/envd manifest/envd_${{ steps.get_version.outputs.VERSION }}_Darwin_x86_64
+          mv dist/envd_darwin_arm64/envd manifest/envd_${{ steps.get_version.outputs.VERSION }}_Darwin_arm64
+          mv dist/envd-sshd_linux_amd64_v1/envd-sshd manifest/envd-sshd_${{ steps.get_version.outputs.VERSION }}_Linux_x86_64
+          mv dist/envd-sshd_linux_arm64/envd-sshd manifest/envd-sshd_${{ steps.get_version.outputs.VERSION }}_Linux_arm64
+          mv dist/envd-sshd_linux_386/envd-sshd manifest/envd-sshd_${{ steps.get_version.outputs.VERSION }}_Linux_i386
+          mv dist/envd-sshd_darwin_amd64_v1/envd-sshd manifest/envd-sshd_${{ steps.get_version.outputs.VERSION }}_Darwin_x86_64
+          mv dist/envd-sshd_darwin_arm64/envd-sshd manifest/envd-sshd_${{ steps.get_version.outputs.VERSION }}_Darwin_arm64
           mv dist/checksums.txt manifest/checksums.txt
       - name: Upload publish manifest
         uses: actions/upload-artifact@v3
         with:
-          name: release_${{ github.event.release.tag_name }}
+          name: release_${{ steps.get_version.outputs.VERSION }}
           retention-days: 1
           path: |
             manifest/
@@ -215,15 +218,18 @@ jobs:
     needs: goreleaser
     steps:
       - uses: actions/checkout@v3
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Download manifest
         uses: actions/download-artifact@v3
         with:
-          name: release_${{ github.event.release.tag_name }}
+          name: release_${{ steps.get_version.outputs.VERSION }}
           path: manifest/
       - name: zip all files
         run: |
           cd manifest
-          ./hack/zip.sh
+          ../hack/zip.sh
       - run: cd ..
       - run: make release-notes VERSION=${{ github.event.release.tag_name }}
       - name: publish to github
