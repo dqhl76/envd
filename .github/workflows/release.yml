@@ -229,6 +229,7 @@ jobs:
       - name: zip all files
         run: |
           cd manifest
+          chmod +x ../hack/zip.sh
           ../hack/zip.sh
       - run: cd ..
       - run: make release-notes VERSION=${{ github.event.release.tag_name }}
